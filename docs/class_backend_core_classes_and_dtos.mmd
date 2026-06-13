@@ -1,0 +1,71 @@
+---
+config:
+  layout: elk
+---
+classDiagram
+    %% Backend Core Classes and DTOs - petclinic-api-gateway
+    %% Based on repository context
+
+    namespace api_gateway {
+        class ApiGatewayApplication {
+            <<Main>>
+            -Resource indexHtml
+            +main(String[] args)$
+            +loadBalancedRestTemplate()$: RestTemplate
+            +loadBalancedWebClientBuilder()$: WebClient_Builder
+            +routerFunction()$: RouterFunction
+            +defaultCustomizer()$: Customizer
+        }
+    }
+
+    namespace boundary_web {
+        class ApiGatewayController {
+            <<RestController>>
+        }
+        class FallbackController {
+            <<RestController>>
+            +fallback()$: ResponseEntity
+        }
+    }
+
+    namespace application {
+        class VisitsServiceClient {
+            <<Component>>
+            -String hostname
+            -WebClient_Builder webClientBuilder
+            +VisitsServiceClient(WebClient_Builder webClientBuilder)
+            +getVisitsForPets(List petIds)$: Mono
+            -joinIds(List petIds)$: String
+            +setHostname(String hostname)
+        }
+        class CustomersServiceClient {
+            <<Component>>
+        }
+    }
+
+    namespace dto {
+        class OwnerDetails {
+            <<DTO>>
+            -int id
+            -String firstName
+            -String lastName
+            -String address
+            -String city
+            -String telephone
+            -List~PetDetails~ pets
+        }
+        class PetDetails {
+            <<DTO>>
+        }
+        class VisitDetails {
+            <<DTO>>
+        }
+        class PetType {
+            <<DTO>>
+        }
+    }
+
+    %% Relationships based on context
+    ApiGatewayController --> VisitsServiceClient : uses
+    ApiGatewayController --> CustomersServiceClient : uses
+    OwnerDetails "1" *-- "0..*" PetDetails : contains

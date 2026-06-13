@@ -1,0 +1,25 @@
+sequenceDiagram
+    %% source: Cluster_15 - Angular controller for owner form
+    participant User as User
+    participant OwnerForm as OwnerForm (Angular)
+    %% source: Cluster_10 - API gateway functionality
+    participant Gateway as ApiGatewayController
+    participant Client as CustomersServiceClient
+    participant OwnersService as "Owners Service"
+
+    User->>OwnerForm: Submit owner data
+    activate OwnerForm
+    OwnerForm->>Gateway: POST /owners
+    activate Gateway
+    Gateway->>Client: createOrUpdate(owner)
+    activate Client
+    Client->>OwnersService: HTTP Request
+    activate OwnersService
+    OwnersService-->>Client: 200 OK
+    deactivate OwnersService
+    Client-->>Gateway: OwnerDetails
+    deactivate Client
+    Gateway-->>OwnerForm: OwnerDetails
+    deactivate Gateway
+    OwnerForm-->>User: Success
+    deactivate OwnerForm

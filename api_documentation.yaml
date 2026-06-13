@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  description: Auto-generated API documentation
+  version: 1.0.0
+paths:
+  /api/gateway/owners/{ownerId}:
+    get:
+      summary: Get owner details with visits using circuit breaker
+      description: Retrieves complete owner details including visits for their pets
+        with circuit breaker pattern for fault tolerance
+      operationId: getOwnerDetails
+      tags:
+      - Gateway
+      - Owners
+      responses:
+        '200':
+          description: Owner details with visits successfully retrieved
+        '400':
+          description: Invalid owner ID provided
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Internal server error or service unavailable
+      parameters:
+      - name: ownerId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the owner
+  /fallback:
+    post:
+      summary: Handles fallback POST requests when services are unavailable
+      description: Returns a fallback response when services are unavailable.
+      operationId: fallback
+      tags:
+      - Fallback
+      responses:
+        '503':
+          description: Chat is currently unavailable. Please try again later.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+tags:
+- name: Fallback
+- name: Gateway
+- name: Owners
