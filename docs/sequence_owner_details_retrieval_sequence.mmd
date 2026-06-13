@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor User
+    participant Comp as "OwnerDetailsComponent (Angular)"
+    participant ApiGw as "ApiGatewayController"
+    participant VisitClient as "VisitsServiceClient"
+    participant VisitSvc as "VisitsService (downstream)"
+
+    User->>Comp: navigate to owner details
+    activate Comp
+    Comp->>ApiGw: GET /owners/{id}
+    activate ApiGw
+    note over ApiGw: Obtain owner data from CustomersService (not shown)
+    ApiGw->>VisitClient: getVisitsForPets(petIds)
+    activate VisitClient
+    VisitClient->>VisitSvc: HTTP GET /pets/visits?petId={petIds}
+    activate VisitSvc
+    VisitSvc-->>VisitClient: Visits
+    deactivate VisitSvc
+    VisitClient-->>ApiGw: Visits
+    deactivate VisitClient
+    ApiGw-->>Comp: aggregated OwnerDetails
+    deactivate ApiGw
+    Comp-->>User: display owner details
+    deactivate Comp
