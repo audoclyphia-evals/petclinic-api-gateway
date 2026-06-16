@@ -29,7 +29,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.function.Function;
-
 /**
  * @author Maciej Szarlinski
  */
@@ -63,6 +62,15 @@ public class ApiGatewayController {
                     .map(addVisitsToOwner(owner))
             );
 
+    }
+
+    @GetMapping(value = "vets/{vetId}/visits")
+    public Mono<Visits> getVisitsForVet(final @PathVariable int vetId) {
+        ReactiveCircuitBreaker cb = cbFactory.create("getVisitsForVet");
+        return cb.run(
+            visitsServiceClient.getVisitsForVet(vetId),
+            throwable -> emptyVisitsForPets()
+        );
     }
 
     private Function<Visits, OwnerDetails> addVisitsToOwner(OwnerDetails owner) {

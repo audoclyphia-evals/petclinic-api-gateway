@@ -21,6 +21,7 @@ package org.springframework.samples.petclinic.api.dto;
 public record VisitDetails (
     Integer id,
     Integer petId,
+    Integer vetId,
     String date,
     String description) {
 }
