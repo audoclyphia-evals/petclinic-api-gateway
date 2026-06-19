@@ -1,0 +1,45 @@
+flowchart TB
+    subgraph Frontend_Tier [Frontend Tier]
+        user([End User])
+        subgraph Angular_Modules [AngularJS SPA]
+            app[App.js]
+            owner[Owner Modules]
+            pet[Pet Modules]
+            visits[Visit Modules]
+            vet[Vet Modules]
+            genai[GenAI Module]
+        end
+        user --> app
+        app --> owner
+        app --> pet
+        app --> visits
+        app --> vet
+        app --> genai
+    end
+
+    subgraph Gateway_Tier [API Gateway Backend]
+        api_gateway[ApiGatewayController]
+        fallback_controller[FallbackController]
+        customers_client[CustomersServiceClient]
+        visits_client[VisitsServiceClient]
+        resilience[Resilience4j Circuit Breaker]
+    end
+
+    subgraph External_Services [External Microservices]
+        customers[(Customers Service)]
+        visits_svc[(Visits Service)]
+    end
+
+    app -->|REST| api_gateway
+    app -->|REST| fallback_controller
+
+    api_gateway --> customers_client
+    api_gateway --> visits_client
+
+    customers_client --> customers
+    visits_client --> visits_svc
+
+    customers_client -.-> resilience
+    visits_client -.-> resilience
+
+    fallback_controller -.->|Response| app

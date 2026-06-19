@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  description: Auto-generated API documentation
+  version: 1.0.0
+paths:
+  /api/gateway/owners/{ownerId}:
+    get:
+      summary: Get owner details with aggregated customer and visit data
+      description: Retrieves owner details by ID, aggregating customer and visit data
+        from services.
+      operationId: getOwnerDetails
+      tags:
+      - Owner
+      responses:
+        '200':
+          description: Owner details retrieved successfully
+        '400':
+          description: Bad request - invalid owner ID
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+      parameters:
+      - name: ownerId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the owner
+  /api/gateway/vets/{vetId}/visits:
+    get:
+      summary: Handles GET request for vet visits, delegating to visits service
+      description: Retrieves visits for a specific vet by ID, using circuit breaker
+        pattern.
+      operationId: getVisitsForVet
+      tags:
+      - vets
+      responses:
+        '200':
+          description: List of visits for the vet
+        '404':
+          description: Vet not found
+        '500':
+          description: Internal server error
+      parameters:
+      - name: vetId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID of the vet
+  /fallback:
+    post:
+      summary: Fallback endpoint returning service unavailable for chat
+      description: Returns a 503 service unavailable response indicating chat is unavailable.
+      operationId: fallback
+      tags:
+      - Fallback
+      responses:
+        '503':
+          description: Service Unavailable
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+tags:
+- name: Fallback
+- name: Owner
+- name: vets
