@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant Client as "External Client"
+    participant Controller as ApiGatewayController
+    participant Customers as CustomersServiceClient
+    participant Visits as VisitsServiceClient
+
+    note over Controller: Handles GET /api/gateway/owners/{ownerId}
+
+    Client->>Controller: GET owner details
+    activate Controller
+
+    Controller->>Customers: fetch owner details
+    activate Customers
+    Customers-->>Controller: return OwnerDetails
+    deactivate Customers
+
+    Controller->>Visits: fetch visits for pets
+    activate Visits
+    Visits-->>Controller: return Visits
+    deactivate Visits
+
+    note right of Controller: Assembly: addVisitsToOwner
+
+    Controller-->>Client: return assembled OwnerDetails
+    deactivate Controller
