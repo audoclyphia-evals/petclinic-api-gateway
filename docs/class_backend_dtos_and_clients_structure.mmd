@@ -1,0 +1,94 @@
+---
+config:
+  layout: elk
+---
+classDiagram
+    direction TB
+
+    namespace dto {
+        class OwnerDetails {
+            <<Record>>
+            -id: int
+            -firstName: String
+            -lastName: String
+            -address: String
+            -city: String
+            -telephone: String
+            -pets: List~PetDetails~
+            +getPetIds(): List~Integer~
+            +anOwnerDetails(): OwnerDetailsBuilder
+        }
+
+        class PetDetails {
+            <<Record>>
+            -id: int
+            -name: String
+            -birthDate: String
+            -type: PetType
+            -visits: List~VisitDetails~
+            +aPetDetails(): PetDetailsBuilder
+        }
+
+        class VisitDetails {
+            <<Record>>
+            -petId: int
+            -id: int
+        }
+
+        class PetType {
+            <<Record>>
+            -name: String
+        }
+
+        class OwnerDetailsBuilder {
+            -id: int
+            -firstName: String
+            -lastName: String
+            -address: String
+            -city: String
+            -telephone: String
+            -pets: List~PetDetails~
+            +build(): OwnerDetails
+        }
+
+        class PetDetailsBuilder {
+            -id: int
+            -name: String
+            -birthDate: String
+            -type: PetType
+            -visits: List~VisitDetails~
+            +build(): PetDetails
+        }
+    }
+
+    namespace application {
+        class CustomersServiceClient {
+            <<Interface>>
+        }
+
+        class VisitsServiceClient {
+            <<Interface>>
+        }
+    }
+
+    namespace boundary_web {
+        class ApiGatewayController {
+            -customersServiceClient: CustomersServiceClient
+            -visitsServiceClient: VisitsServiceClient
+            -cbFactory: ReactiveCircuitBreakerFactory
+            +getOwnerDetails(ownerId: int): Mono~OwnerDetails~
+            +getVisitsForVet(vetId: int): Mono~Visits~
+            -addVisitsToOwner(owner: OwnerDetails): Function~Visits, OwnerDetails~
+            -emptyVisitsForPets(): Mono~Visits~
+        }
+    }
+
+    OwnerDetails "1" *-- "0..*" PetDetails
+    PetDetails "1" *-- "0..*" VisitDetails
+    PetDetails "1" *-- "1" PetType
+    OwnerDetails ..> OwnerDetailsBuilder : creates
+    PetDetails ..> PetDetailsBuilder : creates
+    OwnerDetailsBuilder ..> OwnerDetails : builds
+    PetDetailsBuilder ..> PetDetails : builds
+    ApiGatewayController ..> CustomersServiceClient
+    ApiGatewayController ..> VisitsServiceClient

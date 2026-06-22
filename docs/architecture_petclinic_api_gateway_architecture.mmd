@@ -1,0 +1,40 @@
+flowchart TB
+    %% Nodes with context sources
+    user([End User]) %% External user, implied by context #2 Cluster_0 (frontend navigation)
+    frontend[Angular Frontend] %% Source: context #1 entry points (index.html, app.js) and context #2 Cluster_10
+    api_gateway{{API Gateway}} %% Spring Boot, source: context #1 ApiGatewayApplication and ApiGatewayController
+    customers_service[Customers Service] %% External backend, source: context #1 CustomersServiceClient
+    visits_service[Visits Service] %% External backend, source: context #1 VisitsServiceClient
+
+    %% Edges with labels
+    user -->|Interacts with| frontend
+    frontend -->|HTTP Requests (e.g., /api/gateway/owners/*)| api_gateway
+    api_gateway -->|Customers API (with Circuit Breaker and 10s Time Limiter)| customers_service
+    api_gateway -->|Visits API (with Circuit Breaker and 10s Time Limiter)| visits_service
+    api_gateway -->|Serves Static Files (index.html, app.js)| frontend
+
+    %% Subgraphs for tier organization
+    subgraph User_Tier [User and Frontend]
+        user
+        frontend
+    end
+
+    subgraph API_Gateway_Tier [API Gateway with Resilience]
+        api_gateway
+        %% Resilience patterns configured in ApiGatewayApplication and CircuitBreakerConfiguration
+        %% source: context #1 defaultCustomizer (10s timeout) and context #2 Cluster_6
+    end
+
+    subgraph Backend_Services_Tier [Backend Services]
+        customers_service
+        visits_service
+    end
+
+    %% Legend for relationship types
+    %% Solid edges: Request/Response
+    %% Dashed edges: Not used here
+    %% Edge labels indicate protocol and resilience patterns
+    %% -----------------------------
+    %% Source comments for all elements
+    %% source: context #1 for classes, clients, and resilience configuration
+    %% source: context #2 for cluster descriptions and architecture overview
