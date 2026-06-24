@@ -1,4 +1,4 @@
-/*
+/*  // Java source file defining the ApiGatewayController class for the PetClinic API gateway. It includes imports for Spring Web annotations (e.g., @GetMapping, @RestController), reactive types (Flux, Mono), DTOs (OwnerSummary, VetDetails, Visits), and service clients (CustomersServiceClient, VisitsServiceClient, VetsServiceClient). The file contains the class declaration, constructor, and endpoint methods.
  * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.function.Function;
 /**
- * @author Maciej Szarlinski
+ * REST controller class named ApiGatewayController, mapped to '/api/gateway'. It aggregates data from CustomersServiceClient, VisitsServiceClient, and VetsServiceClient using reactive programming (Flux and Mono). Uses ReactiveCircuitBreakerFactory for circuit breaking in service calls. Implements endpoints: searchOwners (GET) to find owners by last name with visit enrichment, and getVetDetails (GET) to fetch vet information by ID.
  */
 @RestController
 @RequestMapping("/api/gateway")
@@ -83,11 +83,7 @@ public class ApiGatewayController {
     }
 
     /**
-     * Search owners by last name prefix and enrich each result with visit counts.
-     * Calls customers-service for the search, then visits-service for each owner's pets.
-     * Falls back to an empty list on circuit-breaker open.
-     *
-     * @param lastName the prefix to search (empty string returns all owners)
+     * HTTP GET endpoint that searches for pet owners by last name parameter. It calls customersServiceClient to fetch owners, then for each owner, uses a circuit breaker to fetch visit counts from visitsServiceClient, aggregating data into OwnerSummary objects with visit counts. The endpoint is mapped to 'owners/search' and returns a Flux of OwnerSummary.
      */
     @GetMapping(value = "owners/search")
     public Flux<OwnerSummary> searchOwners(
@@ -114,7 +110,7 @@ public class ApiGatewayController {
     }
 
     /**
-     * Fetch a single vet's details by ID (name + specialties).
+     * HTTP GET endpoint that retrieves a veterinarian's details by ID. It employs a circuit breaker around the call to vetsServiceClient.getVet, returning a Mono of VetDetails or an empty Mono on failure. The endpoint is mapped to 'vets/{vetId}'.
      */
     @GetMapping(value = "vets/{vetId}")
     public Mono<VetDetails> getVetDetails(final @PathVariable int vetId) {

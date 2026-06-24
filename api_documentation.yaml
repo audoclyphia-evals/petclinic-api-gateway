@@ -6,19 +6,19 @@ info:
 paths:
   /api/gateway/owners/{ownerId}:
     get:
-      summary: Fetches owner details and enriches with visits
-      description: Retrieves owner details by ID and enriches the response with visit
-        information for the owner's pets.
+      summary: Retrieve owner details with visits
+      description: Aggregates owner details from customers service and adds pet visits
+        from visits service with circuit breaker fallback
       operationId: getOwnerDetails
       tags:
-      - Owners
+      - Gateway
       responses:
         '200':
-          description: Owner details retrieved successfully
+          description: Owner details with pet visits
         '400':
-          description: Bad request due to invalid owner ID
+          description: Bad request
         '401':
-          description: Unauthorized access
+          description: Unauthorized
         '500':
           description: Internal server error
       parameters:
@@ -30,9 +30,49 @@ paths:
         description: Unique identifier of the owner
   /api/gateway/vets/{vetId}/visits:
     get:
-      summary: Endpoint that fetches visits for a specific veterinarian
-      description: Retrieves visits associated with the specified veterinarian ID
+      summary: Retrieves visits for a specific vet
+      description: Retrieves all visits associated with a vet ID, using circuit breaker
+        for resilience.
       operationId: getVisitsForVet
+      tags:
+      - Visits
+      responses:
+        '200':
+          description: Successful retrieval of visits
+        '400':
+          description: Bad request, invalid vet ID
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Internal server error
+      parameters:
+      - name: vetId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the vet
+  /fallback:
+    post:
+      summary: Handle fallback for service unavailability
+      description: Returns a 503 response when downstream services are unavailable.
+      operationId: fallback
+      tags:
+      - Fallback
+      responses:
+        '503':
+          description: Service Unavailable
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/gateway/vets/{vetId}:
+    get:
+      summary: HTTP GET endpoint to fetch a single vet's details by ID.
+      description: Fetches vet details by ID with circuit breaker protection.
+      operationId: getVetDetails
       tags:
       - Vets
       responses:
@@ -50,24 +90,31 @@ paths:
         required: true
         schema:
           type: integer
-        description: The unique identifier of the veterinarian
-  /fallback:
-    post:
-      summary: Returns a 503 fallback response
-      description: Returns 503 Service Unavailable with chat unavailable message
-      operationId: fallbackPost
+        description: The unique identifier of the vet
+  /api/gateway/owners/search:
+    get:
+      summary: Search owners by last name with visit counts
+      description: Searches owners by last name prefix and enriches results with visit
+        counts from visits-service. Returns all owners if lastName is empty.
+      operationId: searchOwners
       tags:
-      - Fallback
+      - Owners
       responses:
-        '503':
-          description: Service Unavailable - Chat is currently unavailable
-      requestBody:
+        '200':
+          description: Success
+        '500':
+          description: Internal server error
+      parameters:
+      - name: lastName
+        in: query
         required: false
-        content:
-          application/json:
-            schema:
-              type: object
+        schema:
+          type: string
+          default: ''
+        description: Last name prefix for case-insensitive search
 tags:
 - name: Fallback
+- name: Gateway
 - name: Owners
 - name: Vets
+- name: Visits
