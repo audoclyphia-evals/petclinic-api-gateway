@@ -1,4 +1,4 @@
-/*
+/*  // This Java file contains the VetsServiceClient class definition and its required imports for interacting with the vets-service in the petclinic API gateway.
  * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Client for the vets-service.
+ * A Spring @Component that acts as a reactive HTTP client for the vets-service. It uses WebClient.Builder to construct WebClient instances and provides methods to retrieve VetDetails objects via HTTP GET requests to the /vets endpoints.
  */
 @Component
 public class VetsServiceClient {
@@ -36,7 +36,7 @@ public class VetsServiceClient {
     }
 
     /**
-     * Fetch a single vet by ID.
+     * Fetches a single vet by ID by making a GET request to the vets-service at the URI path /vets/{vetId}. The method constructs the URI using the hostname field and returns a Mono<VetDetails> for asynchronous handling of the single response.
      */
     public Mono<VetDetails> getVet(final int vetId) {
         return webClientBuilder.build()
@@ -47,7 +47,7 @@ public class VetsServiceClient {
     }
 
     /**
-     * Fetch all vets.
+     * Fetches all vets by making a GET request to the vets-service at the URI path /vets. It uses the hostname field to build the request URI and returns a Flux<VetDetails> to stream multiple vet details reactively.
      */
     public Flux<VetDetails> getAllVets() {
         return webClientBuilder.build()

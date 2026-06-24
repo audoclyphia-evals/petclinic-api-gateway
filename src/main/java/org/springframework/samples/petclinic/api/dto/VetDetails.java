@@ -1,4 +1,4 @@
-/*
+/*  // This file defines the VetDetails record, a data transfer object (DTO) used in the API gateway to encapsulate veterinary data from the vets-service. The record includes immutable fields for the vet's id (unique identifier), firstName, lastName, and a List of Specialty records, each representing a vet's specialty with its own id and name. This DTO supports data transfer between microservices, enabling the API gateway to serve vet information in client responses.
  * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,4 +1,11 @@
-/*
+/*  // OwnerSummary.java
+//
+// This DTO record represents a lightweight summary of an owner, designed for efficient API responses.
+// It contains essential owner details (ID, first name, last name, address, city, telephone) and aggregated
+// counts: petCount (total pets owned) and visitCount (total visits across all pets). These counts are
+// derived from the visits-service through service aggregation logic, as seen in the application's API gateway.
+// This record is used in endpoints like the search endpoint to provide concise owner information without
+// full entity overhead, optimizing network and processing efficiency.
  * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,4 +1,4 @@
-/*
+/*  // Defines the CustomersServiceClient class as a Spring component in the application package, including necessary imports for reactive web communication and DTO handling.
  * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * @author Maciej Szarlinski
+ * A Spring-managed component that uses WebClient to make reactive HTTP calls to the customers-service, providing methods for fetching individual owner details and searching owners by last name prefix.
  */
 @Component
 public class CustomersServiceClient {
@@ -41,8 +41,7 @@ public class CustomersServiceClient {
     }
 
     /**
-     * Search owners by last name prefix via the customers-service search endpoint.
-     * An empty or missing lastName returns all owners.
+     * Performs a GET request to the customers-service endpoint '/owners/search' with the lastName parameter to filter owners by last name prefix, and returns a Flux of OwnerDetails objects representing the search results.
      */
     public Flux<OwnerDetails> searchOwners(final String lastName) {
         return webClientBuilder.build().get()
