@@ -15,39 +15,49 @@
  */
 package org.springframework.samples.petclinic.api.application;
 
-import org.springframework.samples.petclinic.api.dto.OwnerDetails;
+import org.springframework.samples.petclinic.api.dto.VetDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * @author Maciej Szarlinski
+ * Client for the vets-service.
  */
 @Component
-public class CustomersServiceClient {
+public class VetsServiceClient {
+
+    private String hostname = "http://vets-service/";
 
     private final WebClient.Builder webClientBuilder;
 
-    public CustomersServiceClient(WebClient.Builder webClientBuilder) {
+    public VetsServiceClient(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public Mono<OwnerDetails> getOwner(final int ownerId) {
-        return webClientBuilder.build().get()
-            .uri("http://customers-service/owners/{ownerId}", ownerId)
+    /**
+     * Fetch a single vet by ID.
+     */
+    public Mono<VetDetails> getVet(final int vetId) {
+        return webClientBuilder.build()
+            .get()
+            .uri(hostname + "vets/{vetId}", vetId)
             .retrieve()
-            .bodyToMono(OwnerDetails.class);
+            .bodyToMono(VetDetails.class);
     }
 
     /**
-     * Search owners by last name prefix via the customers-service search endpoint.
-     * An empty or missing lastName returns all owners.
+     * Fetch all vets.
      */
-    public Flux<OwnerDetails> searchOwners(final String lastName) {
-        return webClientBuilder.build().get()
-            .uri("http://customers-service/owners/search?lastName={lastName}", lastName)
+    public Flux<VetDetails> getAllVets() {
+        return webClientBuilder.build()
+            .get()
+            .uri(hostname + "vets")
             .retrieve()
-            .bodyToFlux(OwnerDetails.class);
+            .bodyToFlux(VetDetails.class);
+    }
+
+    void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 }

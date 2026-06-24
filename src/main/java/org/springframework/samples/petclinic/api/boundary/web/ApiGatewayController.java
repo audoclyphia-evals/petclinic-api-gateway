@@ -18,13 +18,18 @@ package org.springframework.samples.petclinic.api.boundary.web;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.samples.petclinic.api.application.CustomersServiceClient;
+import org.springframework.samples.petclinic.api.application.VetsServiceClient;
 import org.springframework.samples.petclinic.api.application.VisitsServiceClient;
 import org.springframework.samples.petclinic.api.dto.OwnerDetails;
+import org.springframework.samples.petclinic.api.dto.OwnerSummary;
+import org.springframework.samples.petclinic.api.dto.VetDetails;
 import org.springframework.samples.petclinic.api.dto.Visits;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -40,13 +45,17 @@ public class ApiGatewayController {
 
     private final VisitsServiceClient visitsServiceClient;
 
+    private final VetsServiceClient vetsServiceClient;
+
     private final ReactiveCircuitBreakerFactory cbFactory;
 
     public ApiGatewayController(CustomersServiceClient customersServiceClient,
                                 VisitsServiceClient visitsServiceClient,
+                                VetsServiceClient vetsServiceClient,
                                 ReactiveCircuitBreakerFactory cbFactory) {
         this.customersServiceClient = customersServiceClient;
         this.visitsServiceClient = visitsServiceClient;
+        this.vetsServiceClient = vetsServiceClient;
         this.cbFactory = cbFactory;
     }
 
@@ -70,6 +79,49 @@ public class ApiGatewayController {
         return cb.run(
             visitsServiceClient.getVisitsForVet(vetId),
             throwable -> emptyVisitsForPets()
+        );
+    }
+
+    /**
+     * Search owners by last name prefix and enrich each result with visit counts.
+     * Calls customers-service for the search, then visits-service for each owner's pets.
+     * Falls back to an empty list on circuit-breaker open.
+     *
+     * @param lastName the prefix to search (empty string returns all owners)
+     */
+    @GetMapping(value = "owners/search")
+    public Flux<OwnerSummary> searchOwners(
+        @RequestParam(value = "lastName", required = false, defaultValue = "") String lastName) {
+
+        return customersServiceClient.searchOwners(lastName)
+            .flatMap(owner -> {
+                ReactiveCircuitBreaker cb = cbFactory.create("searchOwners");
+                Mono<Visits> visitsMono = cb.run(
+                    visitsServiceClient.getVisitsForPets(owner.getPetIds()),
+                    throwable -> emptyVisitsForPets()
+                );
+                return visitsMono.map(visits -> new OwnerSummary(
+                    owner.id(),
+                    owner.firstName(),
+                    owner.lastName(),
+                    owner.address(),
+                    owner.city(),
+                    owner.telephone(),
+                    owner.pets().size(),
+                    visits.items().size()
+                ));
+            });
+    }
+
+    /**
+     * Fetch a single vet's details by ID (name + specialties).
+     */
+    @GetMapping(value = "vets/{vetId}")
+    public Mono<VetDetails> getVetDetails(final @PathVariable int vetId) {
+        ReactiveCircuitBreaker cb = cbFactory.create("getVetDetails");
+        return cb.run(
+            vetsServiceClient.getVet(vetId),
+            throwable -> Mono.empty()
         );
     }
 
